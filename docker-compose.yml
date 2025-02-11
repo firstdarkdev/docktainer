@@ -1,0 +1,14 @@
+services:
+  docktainer:
+    image: ghcr.io/firstdarkdev/docktainer:latest
+    container_name: "docktainer"
+    restart: unless-stopped
+    ports:
+      - 80:80
+      - 443:443
+    env_file:
+      - .env
+    volumes:
+      - ./storage/html:/app/html
+      - ./storage/ssl:/app/ssl
+      - ./storage/webhook.log:/app/webhook.log

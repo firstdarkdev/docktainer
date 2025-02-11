@@ -1,0 +1,6 @@
+.idea
+storage/html
+storage/ssl
+
+.env
+docktainer
