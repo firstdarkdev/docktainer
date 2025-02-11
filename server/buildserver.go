@@ -12,7 +12,7 @@ func updateBranch(cloneURL, branch string, silent bool) {
 	// Log and Send discord notification
 	if !silent {
 		logMessage("Received Push Event for branch: %s", branch)
-		sendDiscordMessage(branch, "A new build has started for "+branch, "Build Started", yellow, "")
+		sendDiscordMessage(branch, "A new build has started for `"+branch+"`", "Build Started", yellow, "")
 	}
 
 	// Set up the Working and Output folders
@@ -25,7 +25,7 @@ func updateBranch(cloneURL, branch string, silent bool) {
 		if err := cmd.Run(); err != nil {
 			logMessage("Error cloning branch %s: %v", branch, err)
 			if !silent {
-				sendDiscordMessage(branch, "A build has failed for "+branch, "Build Failed", red, err.Error())
+				sendDiscordMessage(branch, "A build has failed for `"+branch+"`", "Build Failed", red, err.Error())
 			}
 			return
 		}
@@ -38,7 +38,7 @@ func updateBranch(cloneURL, branch string, silent bool) {
 			logMessage("Error resetting branch %s: %v", branch, err)
 
 			if !silent {
-				sendDiscordMessage(branch, "A build has failed for "+branch, "Build Failed", red, err.Error())
+				sendDiscordMessage(branch, "A build has failed for `"+branch+"`", "Build Failed", red, err.Error())
 			}
 			return
 		}
@@ -67,7 +67,7 @@ func updateBranch(cloneURL, branch string, silent bool) {
 		}
 
 		if !silent {
-			sendDiscordMessage(branch, "A build has failed for "+branch, "Build Failed", red, finalLog)
+			sendDiscordMessage(branch, "A build has failed for `"+branch+"`", "Build Failed", red, finalLog)
 		}
 		return
 	}
@@ -81,7 +81,7 @@ func updateBranch(cloneURL, branch string, silent bool) {
 	logMessage("Successfully built and updated branch: %s", branch)
 
 	if !silent {
-		sendDiscordMessage(branch, "A build has completed for "+branch, "Build Successful", green, "")
+		sendDiscordMessage(branch, "A build has completed for `"+branch+"`", "Build Successful", green, "")
 	}
 }
 
@@ -96,7 +96,7 @@ func deleteBranch(branch string) {
 	logMessage("Deleting branch: %s", branch)
 	os.RemoveAll(htmlBranchPath)
 	logMessage("Deleted: %s", htmlBranchPath)
-	sendDiscordMessage(branch, "A deployment for "+branch+"has been deleted", "Branch Deleted", orange, "")
+	sendDiscordMessage(branch, "A deployment for `"+branch+"` has been deleted", "Branch Deleted", orange, "")
 }
 
 // Fetch all remote branches from the GitHub repo
