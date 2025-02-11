@@ -104,6 +104,14 @@ func serveFile(w http.ResponseWriter, r *http.Request, basePath string, requeste
 
 // Handle the incoming GitHub webhook
 func handleWebhook(w http.ResponseWriter, req *http.Request) {
+	eventType := req.Header.Get("X-GitHub-Event")
+
+	// GitHub ping when first adding the webhook
+	if eventType == "ping" {
+		w.WriteHeader(http.StatusOK)
+		return
+	}
+
 	body, err := io.ReadAll(req.Body)
 	if err != nil {
 		http.Error(w, "Failed to read request", http.StatusBadRequest)
@@ -128,7 +136,7 @@ func handleWebhook(w http.ResponseWriter, req *http.Request) {
 	}
 
 	// Branch was updated
-	updateBranch(payload.Repo.CloneURL, branch)
+	updateBranch(payload.Repo.CloneURL, branch, false)
 }
 
 // Helper function to verify the Secret GitHub sent us

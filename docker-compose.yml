@@ -1,6 +1,7 @@
 services:
   docktainer:
     image: ghcr.io/firstdarkdev/docktainer:latest
+    #build: .
     container_name: "docktainer"
     restart: unless-stopped
     ports:

@@ -24,6 +24,7 @@ var (
 	webhookSecret     string
 	discordWebhookUrl string
 	baseUrl           string
+	baseRepository    string
 	discordClient     webhook.Client
 )
 

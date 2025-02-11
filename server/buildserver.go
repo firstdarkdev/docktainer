@@ -5,12 +5,15 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"strings"
 )
 
-func updateBranch(cloneURL, branch string) {
+func updateBranch(cloneURL, branch string, silent bool) {
 	// Log and Send discord notification
-	logMessage("Received Push Event for branch: %s", branch)
-	sendDiscordMessage(branch, "A new build has started for "+branch, "Build Started", yellow, "")
+	if !silent {
+		logMessage("Received Push Event for branch: %s", branch)
+		sendDiscordMessage(branch, "A new build has started for "+branch, "Build Started", yellow, "")
+	}
 
 	// Set up the Working and Output folders
 	repoBranchPath := fmt.Sprintf("%s/%s", repoPath, branch)
@@ -21,7 +24,9 @@ func updateBranch(cloneURL, branch string) {
 		cmd := exec.Command("git", "clone", "-b", branch, cloneURL, repoBranchPath)
 		if err := cmd.Run(); err != nil {
 			logMessage("Error cloning branch %s: %v", branch, err)
-			sendDiscordMessage(branch, "A build has failed for "+branch, "Build Failed", red, err.Error())
+			if !silent {
+				sendDiscordMessage(branch, "A build has failed for "+branch, "Build Failed", red, err.Error())
+			}
 			return
 		}
 	} else {
@@ -31,7 +36,10 @@ func updateBranch(cloneURL, branch string) {
 		cmd = exec.Command("git", "-C", repoBranchPath, "reset", "--hard", fmt.Sprintf("origin/%s", branch))
 		if err := cmd.Run(); err != nil {
 			logMessage("Error resetting branch %s: %v", branch, err)
-			sendDiscordMessage(branch, "A build has failed for "+branch, "Build Failed", red, err.Error())
+
+			if !silent {
+				sendDiscordMessage(branch, "A build has failed for "+branch, "Build Failed", red, err.Error())
+			}
 			return
 		}
 	}
@@ -58,7 +66,9 @@ func updateBranch(cloneURL, branch string) {
 			finalLog = stderr.String()
 		}
 
-		sendDiscordMessage(branch, "A build has failed for "+branch, "Build Failed", red, finalLog)
+		if !silent {
+			sendDiscordMessage(branch, "A build has failed for "+branch, "Build Failed", red, finalLog)
+		}
 		return
 	}
 
@@ -69,7 +79,10 @@ func updateBranch(cloneURL, branch string) {
 
 	// Send final notification to discord
 	logMessage("Successfully built and updated branch: %s", branch)
-	sendDiscordMessage(branch, "A build has completed for "+branch, "Build Successful", green, "")
+
+	if !silent {
+		sendDiscordMessage(branch, "A build has completed for "+branch, "Build Successful", green, "")
+	}
 }
 
 // Branch was deleted, so we delete the output folder
@@ -84,4 +97,53 @@ func deleteBranch(branch string) {
 	os.RemoveAll(htmlBranchPath)
 	logMessage("Deleted: %s", htmlBranchPath)
 	sendDiscordMessage(branch, "A deployment for "+branch+"has been deleted", "Branch Deleted", orange, "")
+}
+
+// Fetch all remote branches from the GitHub repo
+func getAllBranches(cloneURL string) ([]string, error) {
+	cmd := exec.Command("git", "ls-remote", "--heads", cloneURL)
+	var out bytes.Buffer
+	cmd.Stdout = &out
+	if err := cmd.Run(); err != nil {
+		return nil, fmt.Errorf("failed to fetch branches: %v", err)
+	}
+
+	// Parse the output to get branch names
+	branches := []string{}
+	lines := strings.Split(out.String(), "\n")
+	for _, line := range lines {
+		parts := strings.Fields(line)
+		if len(parts) > 1 {
+			branch := parts[1]
+			branch = strings.TrimPrefix(branch, "refs/heads/") // Remove refs/heads/ prefix
+			branches = append(branches, branch)
+		}
+	}
+	return branches, nil
+}
+
+// Check if a branch folder exists in /app/html
+func branchFolderExists(branch string) bool {
+	htmlBranchPath := fmt.Sprintf("%s/%s", htmlPath, branch)
+	if _, err := os.Stat(htmlBranchPath); os.IsNotExist(err) {
+		return false
+	}
+	return true
+}
+
+// Initialize branches on first run
+func initializeBranches() {
+	branches, err := getAllBranches(baseRepository)
+	if err != nil {
+		logMessage("Error fetching branches: %v", err)
+		return
+	}
+
+	// For each branch, check if it exists in the html folder. If not, update it
+	for _, branch := range branches {
+		if !branchFolderExists(branch) {
+			logMessage("Found missing branch: %s. Building...", branch)
+			updateBranch(baseRepository, branch, true)
+		}
+	}
 }
