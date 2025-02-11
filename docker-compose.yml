@@ -1,9 +1,21 @@
 services:
+  watchtower:
+    image: containrrr/watchtower
+    command:
+      - "--label-enable"
+      - "--interval"
+      - "30"
+      - "--rolling-restart"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+
   docktainer:
     image: ghcr.io/firstdarkdev/docktainer:latest
     #build: .
     container_name: "docktainer"
-    restart: unless-stopped
+    restart: always
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
     ports:
       - 80:80
       - 443:443
