@@ -12,7 +12,7 @@ COPY ./server/. .
 RUN go build -o docktainer
 
 # Stage 2: Final container with Retype, Git and the Webserver
-FROM mcr.microsoft.com/dotnet/sdk:7.0-alpine-amd64
+FROM mcr.microsoft.com/dotnet/sdk:9.0-alpine-amd64
 
 # Install required tools
 RUN apk add --no-cache \
