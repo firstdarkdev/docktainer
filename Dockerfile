@@ -20,6 +20,7 @@ RUN apk add --no-cache \
     curl \
     bash \
     tar \
+    xz \
     su-exec
 
 ENV NODE_VERSION=20.14.0

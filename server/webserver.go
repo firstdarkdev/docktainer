@@ -107,7 +107,7 @@ func handleWebhook(w http.ResponseWriter, req *http.Request) {
 	eventType := req.Header.Get("X-GitHub-Event")
 
 	// GitHub ping when first adding the webhook
-	if eventType == "ping" || eventType == "created" {
+	if eventType == "ping" || eventType == "create" {
 		w.WriteHeader(http.StatusOK)
 		return
 	}
