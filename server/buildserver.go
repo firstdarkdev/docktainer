@@ -44,9 +44,28 @@ func updateBranch(cloneURL, branch string, silent bool) {
 		}
 	}
 
-	// Run the retype build command
-	cmd := exec.Command("retype", "build")
-	cmd.Dir = repoBranchPath
+	// Check if this is a docusaurus build
+	isDocusaurus := false
+	if _, err := os.Stat(fmt.Sprintf("%s/docusaurus.config.ts", repoBranchPath)); err == nil {
+		isDocusaurus = true
+	}
+
+	// Set up the command
+	var cmd *exec.Cmd
+	if isDocusaurus {
+		// Install dependencies
+		cmd = exec.Command("npm", "install")
+		cmd.Dir = repoBranchPath
+		_ = cmd.Run()
+
+		// Run the actual build
+		cmd = exec.Command("npm", "run", "build")
+		cmd.Dir = repoBranchPath
+	} else {
+		// It's a Retype site. Run that instead
+		cmd = exec.Command("retype", "build")
+		cmd.Dir = repoBranchPath
+	}
 
 	// Set up logging for the command output
 	var out, stderr bytes.Buffer
@@ -55,7 +74,7 @@ func updateBranch(cloneURL, branch string, silent bool) {
 
 	if err := cmd.Run(); err != nil {
 		// Log the error and output (both stdout and stderr)
-		logMessage("Retype build failed for branch %s: %v", branch, err)
+		logMessage("Build failed for branch %s: %v", branch, err)
 		logMessage("Stdout: %s", out.String())
 		logMessage("Stderr: %s", stderr.String())
 
@@ -75,7 +94,15 @@ func updateBranch(cloneURL, branch string, silent bool) {
 	// Remove old HTML folder, and copy the new one
 	os.RemoveAll(htmlBranchPath)
 	os.MkdirAll(htmlBranchPath, os.ModePerm)
-	exec.Command("cp", "-r", fmt.Sprintf("%s/.retype/.", repoBranchPath), htmlBranchPath).Run()
+
+	// Copy the output files
+	var copyCmd *exec.Cmd
+	if isDocusaurus {
+		copyCmd = exec.Command("cp", "-r", fmt.Sprintf("%s/build/.", repoBranchPath), htmlBranchPath)
+	} else {
+		copyCmd = exec.Command("cp", "-r", fmt.Sprintf("%s/.retype/.", repoBranchPath), htmlBranchPath)
+	}
+	_ = copyCmd.Run()
 
 	// Send final notification to discord
 	logMessage("Successfully built and updated branch: %s", branch)
@@ -85,7 +112,7 @@ func updateBranch(cloneURL, branch string, silent bool) {
 	}
 }
 
-// Branch was deleted, so we delete the output folder
+// The Branch was deleted, so we delete the output folder
 func deleteBranch(branch string) {
 	htmlBranchPath := fmt.Sprintf("%s/%s", htmlPath, branch)
 
@@ -139,7 +166,7 @@ func initializeBranches() {
 		return
 	}
 
-	// For each branch, check if it exists in the html folder. If not, update it
+	// For each branch, check if it exists in the HTML folder. If not, update it
 	for _, branch := range branches {
 		if !branchFolderExists(branch) {
 			logMessage("Found missing branch: %s. Building...", branch)

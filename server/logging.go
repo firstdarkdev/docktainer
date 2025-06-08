@@ -14,9 +14,18 @@ func sendDiscordMessage(branch string, message string, state string, color int, 
 		return
 	}
 
+	icon := "⚡️"
+	if color == red {
+		icon = "💀"
+	} else if color == orange {
+		icon = "🗑️"
+	} else if color == green {
+		icon = "🎉"
+	}
+
 	// Set up the embed details for the body
 	currentTime := time.Now()
-	description := fmt.Sprintf("⚡️Docktainer: %s ⚡\r\n\r\nBranch: %s\r\nURL: %s", message, branch, fmt.Sprintf("https://%s.%s", branch, baseUrl))
+	description := fmt.Sprintf("%s Docktainer: %s %s\r\n\r\nBranch: %s\r\nURL: %s", icon, message, icon, branch, fmt.Sprintf("https://%s.%s", branch, baseUrl))
 
 	if errorLog != "" {
 		description += fmt.Sprintf("\r\n\r\nBuild Output:\r\n%s", errorLog)
