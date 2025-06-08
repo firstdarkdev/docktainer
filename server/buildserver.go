@@ -78,15 +78,8 @@ func updateBranch(cloneURL, branch string, silent bool) {
 		logMessage("Stdout: %s", out.String())
 		logMessage("Stderr: %s", stderr.String())
 
-		finalLog := out.String()
-
-		// Send failure notification to Discord
-		if stderr.String() != "" {
-			finalLog = stderr.String()
-		}
-
 		if !silent {
-			sendDiscordMessage(branch, "A build has failed for `"+branch+"`", "Build Failed", red, finalLog)
+			sendDiscordMessage(branch, "A build has failed for `"+branch+"`", "Build Failed", red, err.Error())
 		}
 		return
 	}
