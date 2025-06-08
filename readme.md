@@ -21,9 +21,10 @@ If you REALLY need to for one reason or another, you can chat to us in [Discord]
 
 ### Tech Used
 
-- Golang - Main Web and Build Server
+- GO - Main Web and Build Server
 - Docker - For building the environment needed for the app to work, as well as running it
 - [Retype](https://retype.com) - The main framework used for building the documentation from Markdown
+- [Docusaurus](https://docusaurus.io/) - Used for building Docusaurus powered websites
 - Cloudflare - HTTPS and other protections
 
 ---
