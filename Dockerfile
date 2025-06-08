@@ -15,7 +15,7 @@ RUN go build -o docktainer
 FROM mcr.microsoft.com/dotnet/sdk:9.0
 
 # Install required tools
-RUN apt-get update && apt-get install -y curl xz-utils git bash tar su-exec
+RUN apt-get update && apt-get install -y curl xz-utils git bash tar
 
 ENV NODE_VERSION=20.14.0
 
