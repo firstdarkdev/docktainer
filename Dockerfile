@@ -12,7 +12,7 @@ COPY ./server/. .
 RUN go build -o docktainer
 
 # Stage 2: Final container with Retype, Git and the Webserver
-FROM mcr.microsoft.com/dotnet/sdk:9.0-alpine-amd64
+FROM mcr.microsoft.com/dotnet/sdk:9.0
 
 # Install required tools
 RUN apk add --no-cache \
@@ -25,7 +25,7 @@ RUN apk add --no-cache \
 
 ENV NODE_VERSION=20.14.0
 
-RUN curl -fsSL https://unofficial-builds.nodejs.org/download/release/v$NODE_VERSION/node-v$NODE_VERSION-linux-musl-x64.tar.xz \
+RUN curl -fsSL https://nodejs.org/dist/v$NODE_VERSION/node-v$NODE_VERSION-linux-x64.tar.xz \
     | tar -xJf - -C /usr/local --strip-components=1 --no-same-owner
 
 RUN node -v && npm -v
