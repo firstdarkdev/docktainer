@@ -25,8 +25,10 @@ RUN apk add --no-cache \
 
 ENV NODE_VERSION=20.14.0
 
-RUN curl -fsSL https://nodejs.org/dist/v$NODE_VERSION/node-v$NODE_VERSION-linux-x64.tar.xz \
+RUN curl -fsSL https://unofficial-builds.nodejs.org/download/release/v$NODE_VERSION/node-v$NODE_VERSION-linux-musl-x64.tar.xz \
     | tar -xJf - -C /usr/local --strip-components=1 --no-same-owner
+
+RUN node -v && npm -v
 
 # Install and Configure Retype
 RUN dotnet tool install retypeapp --tool-path /bin
